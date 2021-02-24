@@ -1,0 +1,1 @@
+python inference.py --model_dir ./tmp/biosyn-ncbi-disease --dictionary_path ./datasets/ncbi-disease/test_dictionary.txt --mention "vascular hemorrhage" --show_predictions
