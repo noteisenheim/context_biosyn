@@ -65,6 +65,10 @@ def parse_args():
                         default=0, type=float)
     parser.add_argument('--dense_ratio', type=float,
                         default=0.5)
+    # ------ MY CODE ------
+    parser.add_argument('--sparse_ratio', type=float,
+                        default=0.5)
+    # ------ MY CODE ------
     parser.add_argument('--save_checkpoint_all', action="store_true")
 
     args = parser.parse_args()
@@ -243,8 +247,11 @@ def main(args):
         tokenizer = tokenizer, 
         topk = args.topk, 
         d_ratio=args.dense_ratio,
+        s_ratio=args.sparse_ratio,
         s_score_matrix=train_sparse_score_matrix,
-        s_candidate_idxs=train_sparse_candidate_idxs
+        s_candidate_idxs=train_sparse_candidate_idxs,
+        sent_score_matrix=train_sent_score_matrix,
+        sent_candidate_idxs=train_sent_candidate_idxs
     )
     train_loader = torch.utils.data.DataLoader(
         train_set,

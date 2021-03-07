@@ -110,10 +110,17 @@ class BioSyn(object):
         torch.save(self.sparse_weight, sparse_weight_file)
         logging.info("Sparse weight saved in {}".format(sparse_weight_file))
 
+        sent_weight_file = os.path.join(path,'sent_weight.pt')
+        torch.save(self.sent_weight, sent_weight_file)
+        logging.info("Sent weight saved in {}".format(sent_weight_file))
+
+
+
     def load_model(self, path, max_length=25, use_cuda=True):
         self.load_bert(path, max_length, use_cuda)
         self.load_sparse_encoder(path)
         self.load_sparse_weight(path)
+        self.load_sent_weight(path)
         
         return self
 
@@ -132,6 +139,12 @@ class BioSyn(object):
     def load_sparse_weight(self, path):
         sparse_weight_file = os.path.join(path, 'sparse_weight.pt')
         self.sparse_weight = torch.load(sparse_weight_file)
+
+        return self.sparse_weight
+
+    def load_sent_weight(self, path):
+        sent_weight_file = os.path.join(path, 'sent_weight.pt')
+        self.sent_weight = torch.load(sent_weight_file)
 
         return self.sparse_weight
 

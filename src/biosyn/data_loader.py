@@ -117,7 +117,7 @@ class CandidateDataset(Dataset):
     Candidate Dataset for:
         query_tokens, candidate_tokens, label
     """
-    def __init__(self, queries, dicts, tokenizer, topk, d_ratio, s_score_matrix, s_candidate_idxs):
+    def __init__(self, queries, dicts, tokenizer, topk, d_ratio, s_ratio, s_score_matrix, s_candidate_idxs, sent_score_matrix, sent_candidate_idxs):
         """
         Retrieve top-k candidates based on sparse/dense embedding
 
@@ -142,11 +142,14 @@ class CandidateDataset(Dataset):
         self.dict_names, self.dict_ids = [row[0] for row in dicts], [row[1] for row in dicts]
         self.topk = topk
         self.n_dense = int(topk * d_ratio)
-        self.n_sparse = topk - self.n_dense
+        self.n_sparse = int((topk - self.n_dense) * s_ratio)
+        self.n_sent = topk - self.n_dense - self.n_sparse
         self.tokenizer = tokenizer
 
         self.s_score_matrix = s_score_matrix
         self.s_candidate_idxs = s_candidate_idxs
+        self.sent_score_matrix = sent_score_matrix
+        self.sent_candidate_idxs = sent_candidate_idxs
         self.d_candidate_idxs = None
 
     def set_dense_candidate_idxs(self, d_candidate_idxs):
@@ -155,6 +158,8 @@ class CandidateDataset(Dataset):
     def __getitem__(self, query_idx):
         assert (self.s_candidate_idxs is not None)
         assert (self.s_score_matrix is not None)
+        assert (self.sent_candidate_idxs is not None)
+        assert (self.sent_score_matrix is not None)
         assert (self.d_candidate_idxs is not None)
 
         query_name = self.query_names[query_idx]
@@ -162,10 +167,21 @@ class CandidateDataset(Dataset):
 
         # combine sparse and dense candidates as many as top-k
         s_candidate_idx = self.s_candidate_idxs[query_idx]
+        sent_candidate_idx = self.sent_candidate_idxs[query_idx]
         d_candidate_idx = self.d_candidate_idxs[query_idx]
         
         # fill with sparse candidates first
         topk_candidate_idx = s_candidate_idx[:self.n_sparse]
+
+        # ------ MY CODE ------
+        num_add = 0
+        for sent_idx in sent_candidate_idx:
+            if sent_idx not in topk_candidate_idx:
+                topk_candidate_idx = np.append(topk_candidate_idx, sent_idx)
+                num_add += 1
+            if num_add == self.n_sent:
+                break
+        # ------ MY CODE ------
         
         # fill remaining candidates with dense
         for d_idx in d_candidate_idx:
@@ -180,13 +196,14 @@ class CandidateDataset(Dataset):
         
         candidate_names = [self.dict_names[candidate_idx] for candidate_idx in topk_candidate_idx]
         candidate_s_scores = self.s_score_matrix[query_idx][topk_candidate_idx]
+        candidate_sent_scores = self.sent_score_matrix[query_idx][topk_candidate_idx]
         labels = self.get_labels(query_idx, topk_candidate_idx).astype(np.float32)
         query_token = np.array(query_token).squeeze()
 
         candidate_tokens = self.tokenizer.transform(candidate_names)
         candidate_tokens = np.array(candidate_tokens)
         
-        return (query_token, candidate_tokens, candidate_s_scores), labels
+        return (query_token, candidate_tokens, candidate_s_scores, candidate_sent_scores), labels
 
     def __len__(self):
         return len(self.query_names)
