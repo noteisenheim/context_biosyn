@@ -23,7 +23,7 @@ Unpacked dataset had to be placed in `datasets/ncbi-disease` folder for the defa
 ### Windows
 
 ```
-.\train_cmd.bat
+.\train_cmd_sent.bat
 ```
 
 ### Linux
@@ -41,6 +41,18 @@ python train.py \
 ### Pretrained
 
 Pretrained model can be loaded from the `tmp/biosyn-ncbi-disease_sent` directory.
+
+#### Evaluation
+
+```
+.\eval_cmd_sent.bat
+```
+
+#### Run on custom data
+
+```
+.\predict_cmd_sent.bat
+```
 
 ## TODO:
 
