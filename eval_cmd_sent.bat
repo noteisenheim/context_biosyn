@@ -1,0 +1,1 @@
+python eval.py --model_dir ./tmp/biosyn-ncbi-disease_sent --dictionary_path ./datasets/ncbi-disease/test_dictionary.txt --data_dir ./datasets/ncbi-disease/processed_test --output_dir ./tmp/biosyn-ncbi-disease_sent --topk 20 --max_length 25 --save_predictions --hierarchy ./datasets/ncbi-disease/hierarchy.tsv

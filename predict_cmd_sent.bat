@@ -1,0 +1,1 @@
+python inference.py --model_dir ./tmp/biosyn-ncbi-disease --dictionary_path ./datasets/ncbi-disease/test_dictionary.txt --mention "vascular hemorrhage" --sentence "Successful management of catastrophic peripheral vascular hemorrhage using massive autotransfusion and damage control surgery in a dog" --show_predictions

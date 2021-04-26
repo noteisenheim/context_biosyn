@@ -4,13 +4,16 @@ import os
 import json
 from tqdm import tqdm
 from utils import (
-    evaluate
+    evaluate, getLCAStatistics
 )
 from src.biosyn import (
     DictionaryDataset,
     QueryDataset,
     BioSyn
 )
+from collections import defaultdict
+import pandas as pd
+
 LOGGER = logging.getLogger()
 
 def parse_args():
@@ -32,6 +35,7 @@ def parse_args():
     parser.add_argument('--filter_composite', action="store_true", help="filter out composite mention queries")
     parser.add_argument('--filter_duplicate', action="store_true", help="filter out duplicate queries")
     parser.add_argument('--save_predictions', action="store_true", help="whether to save predictions")
+    parser.add_argument('--hierarchy', type=str, help='Hierarchy file for the dataset')
 
     # Tokenizer settings
     parser.add_argument('--max_length', default=25, type=int)
@@ -65,6 +69,7 @@ def main(args):
     init_logging()
     print(args)
 
+
     # load dictionary and data
     eval_dictionary = load_dictionary(dictionary_path=args.dictionary_path)
     eval_queries = load_queries(
@@ -79,13 +84,29 @@ def main(args):
             use_cuda=args.use_cuda
     )
     
-    result_evalset = evaluate(
+    result_evalset, errors_evalset = evaluate(
         biosyn=biosyn,
         eval_dictionary=eval_dictionary,
         eval_queries=eval_queries,
         topk=args.topk,
         score_mode=args.score_mode
     )
+
+    # load hierarchy
+    # 	<unk>	0
+    # 	# MESH:C	-1
+    if args.hierarchy:
+        tree_map = defaultdict(dict)
+        with open(args.hierarchy) as f:
+            for l in f:
+                fields = l[:-1].split('\t')
+                if len(fields) > 2:
+                    tree_map[fields[0].replace('MESH:', '').replace('OMIM:', '')][fields[1].replace('MESH:', '').replace('OMIM:', '')] = int(fields[2])
+                    tree_map[fields[1].replace('MESH:', '').replace('OMIM:', '')][fields[0].replace('MESH:', '').replace('OMIM:', '')] = -1 * int(fields[2])
+                else:
+                    print(fields)
+        print(tree_map['D018256'])
+        getLCAStatistics(eval_dictionary, tree_map, errors_evalset)
     
     LOGGER.info("acc@1={}".format(result_evalset['acc1']))
     LOGGER.info("acc@5={}".format(result_evalset['acc5']))
@@ -94,6 +115,9 @@ def main(args):
         output_file = os.path.join(args.output_dir,"predictions_eval.json")
         with open(output_file, 'w') as f:
             json.dump(result_evalset, f, indent=2)
+        
+        df = pd.DataFrame.from_records(errors_evalset, columns=['true', 'true name', 'pred', 'pred name'])
+        df.to_csv(os.path.join(args.output_dir, "errors_eval.json"), sep='\t', index=False)
 
 if __name__ == '__main__':
     args = parse_args()

@@ -89,10 +89,20 @@ class BioSyn(object):
         
         return self.sparse_encoder
 
+    def get_sent_encoder(self):
+        assert(self.sent_encoder is not None)
+
+        return self.sent_encoder
+
     def get_sparse_weight(self):
         assert (self.sparse_weight is not None)
         
         return self.sparse_weight
+
+    def get_sent_weight(self):
+        assert (self.sent_weight is not None)
+
+        return self.sent_weight
 
     def save_model(self, path):
         # save bert model, bert config
@@ -120,6 +130,7 @@ class BioSyn(object):
         self.load_bert(path, max_length, use_cuda)
         self.load_sparse_encoder(path)
         self.load_sparse_weight(path)
+        self.init_sent_encoder()
         self.load_sent_weight(path)
         
         return self

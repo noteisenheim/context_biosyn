@@ -18,6 +18,9 @@ def parse_args():
     parser.add_argument('--mention', type=str, required=True, help='mention to normalize')
     parser.add_argument('--model_dir', required=True, help='Directory for model')
 
+    # Optional
+    parser.add_argument('--sentence', type=str, required=False, help='sentence where mention is contained')
+
     # Settings
     parser.add_argument('--show_embeddings',  action="store_true")
     parser.add_argument('--show_predictions',  action="store_true")
@@ -79,6 +82,7 @@ def main(args):
     # embed mention
     mention_sparse_embeds = biosyn.embed_sparse(names=[mention])
     mention_dense_embeds = biosyn.embed_dense(names=[mention])
+    mention_sent_embeds = biosyn.embed_sent(self, names, show_progress=False)
     
     output = {
         'mention': args.mention,
