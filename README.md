@@ -18,6 +18,8 @@ pip install -r requirements.txt
 For the training and performance evaluation, **ncbi-disease** dataset was used. It can be downloaded [here](https://drive.google.com/open?id=1nqTQba0IcJiXUal7fx3s-KUFRCfMPpaj).
 Unpacked dataset had to be placed in `datasets/ncbi-disease` folder for the default setup.
 
+Pretrained model is [here](https://drive.google.com/drive/folders/1zmZOYpvOHbNO2Nz8vgMpF776_ORjqrxg?usp=sharing). By the default settings, it is assumed to reside in the `.tmp` directory.
+
 ## Training
 
 ### Windows
